@@ -26,11 +26,11 @@
 (defun find-track-num (tree test)
   "Returns first track number in cue-sheet for which
    test function evaluates to T.
-   Test function receives arguments of track command
-   in assoc list as its first and only argument"
+   Test function receives track command and its arguments
+   as its first and only argument"
   (let ((tracks (second tree)))
     (position-if #'(lambda (track)
-                     (funcall test (cdr track)))
+                     (funcall test track))
                  tracks)))
 
 (defun get-from-toplevel (tree command)
@@ -81,3 +81,9 @@
               (sec (getf index-entry :sec)))
           (+ (* 60 min) sec))
       (error 'cue-parser-error :message "no index entry with such number"))))
+
+(defmacro do-tracks ((track tree) &body body)
+  (let ((tracks (gensym)))
+    `(let ((,tracks (second ,tree)))
+       (dolist (,track ,tracks)
+         ,@body))))
