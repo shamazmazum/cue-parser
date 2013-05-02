@@ -28,4 +28,4 @@
   :components ((:file "package")
 	       (:file "parser" :depends-on ("package"))
                (:file "helper-functions" :depends-on ("package")))
-  :depends-on (:esrap))
+  :depends-on (:esrap :flexi-streams))

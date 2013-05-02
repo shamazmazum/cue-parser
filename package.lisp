@@ -23,7 +23,7 @@
 
 (defpackage cue-parser
   (:nicknames :cue)
-  (:use #:cl #:esrap)
+  (:use #:cl #:esrap #:flexi-streams)
   (:export #:parse-cue ;; Parser
            #:cue-parser-error ;;Condition (if something goes wrong
            #:find-track-num ;; Helper functions
@@ -32,4 +32,5 @@
            #:get-from-track
            #:get-from-track-plist
            #:get-file-name
-           #:get-track-index-sec))
+           #:get-track-index-sec
+           #:parse-cue-helper))

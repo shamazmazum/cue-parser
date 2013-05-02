@@ -23,6 +23,8 @@
 
 (in-package :cue-parser)
 
+(defvar *default-external-format* '(:latin-1 :eol-style :crlf))
+
 (define-condition cue-parser-error ()
   ((message :initarg :message
             :reader error-message))
@@ -170,3 +172,9 @@
                                     '(#\NewLine)))))
     (parse 'cue-sheet
            (apply #'concatenate 'string data))))
+
+(defun parse-cue-helper (name &optional (external-format *default-external-format*))
+  "Parses cue sheet from file with name NAME"
+  (let* ((input-raw (open name :element-type 'octet))
+         (input (make-flexi-stream input-raw :external-format external-format)))
+    (unwind-protect (parse-cue input) (close input))))
