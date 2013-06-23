@@ -43,7 +43,7 @@
 
 (defun allowed-character (c)
   (or (alphanumericp c)
-      (find c "/,.&-:()'")))
+      (find c "!#$%&'()*+,-./:;<=>?@[\]^_`")))
 
 (defrule allowed (allowed-character character))
 (defrule allowed-space (or allowed " "))
