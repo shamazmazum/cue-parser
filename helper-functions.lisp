@@ -23,64 +23,68 @@
 
 (in-package :cue-parser)
 
-(defun find-track-num (tree test)
-  "Returns first track number in cue-sheet for which
-   test function evaluates to T.
-   Test function receives track command and its arguments
-   as its first and only argument"
-  (let ((tracks (second tree)))
-    (position-if #'(lambda (track)
-                     (funcall test track))
-                 tracks)))
+(defun find-track (tree test)
+  "Returns first track in cue-sheet which satisfies the test.
+   Test function receives list of track command and its
+   arguments as its first and only argument."
+  (find-if test (second tree)))
 
 (defun get-from-toplevel (tree command)
   "Get the only argument of the command from
    top-level block of parse tree"
-  (cdr
-   (find-if #'(lambda (tblock)
-                (eq (car tblock) command))
-            (car tree))))
+  (flet ((needed-commandp (toplevel-command)
+           (eq (car toplevel-command) command)))
+    (cdr
+     (find-if #'needed-commandp (car tree)))))
 
 (defun get-from-toplevel-plist (tree command prop)
   "Get prop argument of the command from
    top-level block of parse tree"
   (getf (get-from-toplevel tree command) prop))
 
-(defun get-from-track (tree track-num command)
+(defun get-from-track (track command)
   "Get the only argument of the command from
    track block of parse tree"
-  (cdr (find-if #'(lambda (tblock)
-                    (eq (car tblock) command))
-                (nth track-num (second tree)))))
+  (flet ((needed-commandp (track-command)
+           (eq (car track-command) command)))
+    (cdr (find-if #'needed-commandp track))))
 
-(defun get-from-track-plist (tree track-num command prop)
+(defun get-from-track-plist (track command prop)
   "Get prop argument of the command from
    track block of parse tree"
-  (getf (get-from-track tree track-num command) prop))
+  (getf (get-from-track track command) prop))
 
-(defun get-file-name (tree track-num)
+;; Ugly
+(defun get-file-name (tree track)
   "Returns file where track can be found"
-  (or (get-from-track-plist tree track-num :file :name)
-      (get-from-toplevel-plist tree :file :name)
-      (error 'cue-parser-error :message "Missing mandatory file info")))
+  (let* ((tracks (second tree))
+         (track-with-file
+          (find-if #'(lambda (track%)
+                       (get-from-track track% :file))
+                   tracks
+                   :start 0
+                   :end (1+ (position track tracks :test #'equalp))
+                   :from-end t)))
 
-(defun get-track-index-sec (tree track-num &key (index :start))
+    (get-from-track-plist track-with-file :file :name)))
+
+(defun get-track-index-sec (track &optional (index :start))
   "Get index in seconds for track from tree.
    INDEX can be either :PREGAP, :START or number."
+  (declare (type (or number (member :pregap :start)) index))
   (let* ((index-num
           (cond
            ((eq index :pregap) 0)
            ((eq index :start) 1)
-           ((numberp index) index)
-           (t (error 'cue-parser-error :message "INDEX can be either :PREGAP :START or number"))))
+           (t index)))
          (index-entry (cdr (find-if #'(lambda (entry) (and (eq (car entry) :index)
                                                            (= index-num (getf (cdr entry) :number))))
-                                    (nth track-num (second tree))))))
+                                    track))))
+    
     (if index-entry
         (let ((min (getf index-entry :min))
               (sec (getf index-entry :sec)))
-          (+ (* 60 min) sec))
-      (error 'cue-parser-error :message "no index entry with such number"))))
+          (+ (* 60 min) sec)))))
 
 (defmacro do-tracks ((track tree) &body body)
   (let ((tracks (gensym)))

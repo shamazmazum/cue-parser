@@ -4,12 +4,14 @@ from it.
 
 Example:
   (with-open-file (stream "file.cue")
-    (let ((tree (cue:parse-cue stream)))
-      (cue:get-from-toplevel tree :title) ;; Title of an album
-      (cue:get-from-track tree 2 :title) ;; Title of second (usually) track in tree
-;; Returns number of seconds from beginning of stream to third track's pregap
-      (cue:get-track-index-sec tree 3 :pregap)
-;; Returns number of seconds from beginning of stream to beginning of third track
-      (cue:get-start-time-in-seconds tree 3 :start)))
+    (let* ((tree (cue:parse-cue stream))
+           (track (cue:find-track ; Find track with title "Gop Stop"
+                   tree
+                   #'(lambda (track) (string= (cue:get-from-track track :title) "Gop Stop")))))
+
+      (cue:get-from-toplevel tree :title)   ; Title of an album
+      (cue:get-from-track track :performer) ; Performer of the found track
+;; Returns number of seconds from beginning of stream to the track's  pregap
+      (cue:get-track-index-sec track :pregap)))
 
 And so on. See helper-functions.lisp for more info.

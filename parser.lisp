@@ -23,55 +23,66 @@
 
 (in-package :cue-parser)
 
-(defvar *default-external-format* '(:latin-1 :eol-style :crlf))
+;; FIXME: Is there more elegant solution?
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun repeat-n-times (form n)
+    (cons 'and
+          (loop repeat n
+             collect form))))
 
-(define-condition cue-parser-error ()
-  ((message :initarg :message
-            :reader error-message))
-  (:report (lambda (c s)
-             (format s "cue-parser error: ~A"
-                     (error-message c))))
-  (:documentation "This condition occurs only in helper functions when
-                   parsed tree does not pass sanity checks.
-                   Then parsing, catch esrap-error"))
+(defun number-parser (list)
+  (parse-integer (text list) :radix 10))
+
+(defun string-to-keyword (list)
+  (destructuring-bind (string val) list
+    (cons (intern (subseq string 0 (1- (length string)))
+                  (find-package :keyword))
+          val)))
+
 ;; Basic "letters" of our alphabet
-(defrule digit (or "1" "2" "3" "4" "5" "6" "7" "8" "9" "0"))
+(defrule digit (digit-char-p character))
+(defrule alphanumeric (alphanumericp character))
 
 ;; Alphanumeric and other allowed characters
 ;; FIXME: Some of these symbols are not actually allowed in file name string
 ;; if it is not quoted
 
-(defun allowed-character (c)
-  (or (alphanumericp c)
-      (find c "!#$%&'()*+,-./:;<=>?@[\]^_`")))
+(defun not-an-but-allowed (c)
+  (find c "!#$%&'()*+,-./:;<=>?@[\]^_`"))
 
-(defrule allowed (allowed-character character))
-(defrule allowed-space (or allowed " "))
+(defrule allowed (or (not-an-but-allowed character)
+                     alphanumeric))
+(defrule allowed-or-space (or allowed #\Space))
 
 ;; Number
 (defrule number (+ digit)
-  (:lambda (list)
-           (parse-integer (text list) :radix 10)))
+  (:function number-parser))
 
 ;; Simple or quoted string
-(defrule string (or (+ allowed) (and "\"" (+ allowed-space) "\""))
+(defrule string (or (+ allowed) (and #\" (+ allowed-or-space) #\"))
   (:lambda (list)
            (if (and (= (length list) 3)
-                    (equal (first list) "\""))
+                    (string= (first list)
+                             (string #\"))
+                    (string= (third list)
+                             (string #\")))
                (text (second list))
              (text list))))
 
 ;; Strings allowed in comments
-(defrule rem-string (+ (or allowed "\"" " "))
-  (:lambda (list) (text list)))
+(defrule rem-string (+ (or allowed #\" #\Space))
+  (:function text))
 
-(defrule media-catalog-number (and digit digit digit digit digit digit digit digit digit digit digit digit digit )
-  (:lambda (list)
-           (parse-integer (text list) :radix 10)))
+;; ISRC code
+(defrule isrc-code (and #.(repeat-n-times 'alphanumeric 5)
+                        #.(repeat-n-times 'digit 7))
+  (:function text))
 
-(defrule track-number (and digit digit)
-  (:lambda (list)
-           (parse-integer (text list) :radix 10)))
+(defrule media-catalog-number #.(repeat-n-times 'digit 13)
+  (:function number-parser))
+
+(defrule 2digits #.(repeat-n-times 'digit 2)
+  (:function number-parser))
 
 (defrule filetype (or "BINARY" "WAVE" "MP3" "AIFF" "MOTOROLLA"))
 (defrule flags (or "DCP" "4CH" "PRE" "SCMS"))
@@ -86,40 +97,36 @@
                 (cons :rem comment)))
 
 (defrule catalog-command (and "CATALOG " media-catalog-number)
-  (:destructure (catalog number)
-                (declare (ignore catalog))
-                (cons :catalog number)))
+  (:function string-to-keyword))
 
-(defrule file-command (and "FILE " string " " filetype)
-  (:destructure (file name space type)
-                (declare (ignore file space))
+(defrule file-command (and "FILE " string #\Space filetype #\NewLine)
+  (:destructure (file name space type nl)
+                (declare (ignore file space nl))
                 (list :file :name name :type type)))
 
-(defrule flags-command (and "FLAGS " (+ (and flags (? " "))))
+(defrule flags-command (and "FLAGS " (+ (and flags (? #\Space))))
   (:destructure (flags list)
                 (declare (ignore flags))
-                (cons :flags
-                      (loop for flag in list collect (car flag)))))
+                (cons :flags (mapcar #'car list))))
 
-(defrule index-command (and "INDEX " track-number " " track-number ":" track-number ":" track-number)
-  (:destructure (index track-number space min colon1 sec colon3 frame)
+(defrule index-command (and "INDEX " 2digits #\Space 2digits #\: 2digits #\: 2digits)
+  (:destructure (index index-number space min colon1 sec colon3 frame)
                 (declare (ignore index space colon1 colon3 frame))
-                (list :index :number track-number :min min :sec sec)))
+                (list :index :number index-number :min min :sec sec)))
 
 (defrule performer-command (and "PERFORMER " string)
-  (:destructure (performer string)
-                (declare (ignore performer))
-                (cons :performer string)))
+  (:function string-to-keyword))
 
 (defrule title-command (and "TITLE " string)
-  (:destructure (title string)
-                (declare (ignore title))
-                (cons :title string)))
+  (:function string-to-keyword))
 
-(defrule track-command (and "TRACK " track-number " " datatype)
-  (:destructure (track number space type)
-                (declare (ignore track space))
+(defrule track-command (and "TRACK " 2digits #\Space datatype #\NewLine)
+  (:destructure (track number space type nl)
+                (declare (ignore track space nl))
                 (list :track :number number :type type)))
+
+(defrule isrc-command (and "ISRC " isrc-code)
+  (:function string-to-keyword))
 
 ;; File structure
 ;; As described in CUE-sheet documentation FILE command
@@ -132,34 +139,26 @@
 ;; of new block
 
 ;; Command which are allowed inside a block
-(defrule inner-command (or title-command index-command
-                           performer-command flags-command))
+(defrule inner-command (and (or title-command index-command isrc-command
+                                performer-command flags-command)
+                            #\NewLine)
+  (:function first))
 ;; Commands which can be outside a block
-(defrule toplevel-command (or rem-command catalog-command
-                              flags-command performer-command
-                              title-command      file-command))
+(defrule toplevel-command (and (or rem-command catalog-command
+                                   flags-command performer-command
+                                   title-command)
+                               #\NewLine)
+  (:function first))
 
-(defrule inner-line (and inner-command #\NewLine)
-  (:lambda (list) (first list)))
-
-(defrule toplevel-line (and toplevel-command #\NewLine)
-  (:lambda (list) (first list)))
-
-(defrule file-line (and file-command #\NewLine)
-  (:lambda (list) (first list)))
-
-(defrule track-line (and track-command #\NewLine)
-  (:lambda (list) (first list)))
-
-(defrule inner-block (and (? file-line) track-line
-                          (+ inner-line))
+(defrule inner-block (and (? file-command) track-command
+                          (+ inner-command))
   (:destructure (file track inner-commands)
                 (let ((inner-s-expr (cons track inner-commands)))
                   (if file (cons file inner-s-expr)
                     inner-s-expr))))
 
 ;; Final rule for whole cue sheet
-(defrule cue-sheet (and (+ toplevel-line) (+ inner-block)))
+(defrule cue-sheet (and (+ toplevel-command) (+ inner-block)))
 
 (defun parse-cue (stream)
   "Parse cue-sheet from stream.

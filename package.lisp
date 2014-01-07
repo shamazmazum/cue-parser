@@ -26,7 +26,7 @@
   (:use #:cl #:esrap #:flexi-streams)
   (:export #:parse-cue ;; Parser
            #:cue-parser-error ;;Condition (if something goes wrong
-           #:find-track-num ;; Helper functions
+           #:find-track ;; Helper functions
            #:get-from-toplevel
            #:get-from-toplevel-plist
            #:get-from-track
