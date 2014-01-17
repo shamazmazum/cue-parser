@@ -172,7 +172,9 @@
     (parse 'cue-sheet
            (apply #'concatenate 'string data))))
 
-(defun parse-cue-helper (name &optional (external-format *default-external-format*))
+(defparameter *cue-external-format* '(:utf-8 :eol-style :crlf))
+
+(defun parse-cue-helper (name &optional (external-format *cue-external-format*))
   "Parses cue sheet from file with name NAME"
   (let* ((input-raw (open name :element-type 'octet))
          (input (make-flexi-stream input-raw :external-format external-format)))

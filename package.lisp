@@ -33,4 +33,5 @@
            #:get-from-track-plist
            #:get-file-name
            #:get-track-index-sec
-           #:parse-cue-helper))
+           #:parse-cue-helper
+           #:*cue-external-format*))
