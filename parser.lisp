@@ -164,13 +164,13 @@
   "Parse cue-sheet from stream.
    Stream must be opened as character stream.
    User must detect and set :external-format by himself"
-  (let ((data
-         (loop for line = (read-line stream nil)
-               while line
-               collect (concatenate 'string (string-trim '(#\Tab #\Space) line)
-                                    '(#\NewLine)))))
-    (parse 'cue-sheet
-           (apply #'concatenate 'string data))))
+
+  (parse 'cue-sheet
+         (with-output-to-string (out)
+           (loop for line = (read-line stream nil)
+                 while line do
+                  (write-string (string-trim '(#\Tab #\Space) line) out)
+                  (terpri out)))))
 
 (defparameter *cue-external-format* '(:utf-8 :eol-style :crlf))
 
