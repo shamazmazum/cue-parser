@@ -29,6 +29,10 @@
    arguments as its first and only argument."
   (find-if test (second tree)))
 
+(defun get-track-by-idx (tree idx)
+  "Return track from parsed tree by its index"
+  (nth idx (second tree)))
+
 (defun get-from-toplevel (tree command)
   "Get the only argument of the command from
    top-level block of parse tree"

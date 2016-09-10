@@ -25,8 +25,8 @@
   (:nicknames :cue)
   (:use #:cl #:esrap #:flexi-streams)
   (:export #:parse-cue ;; Parser
-           #:cue-parser-error ;;Condition (if something goes wrong
            #:find-track ;; Helper functions
+           #:get-track-by-idx
            #:get-from-toplevel
            #:get-from-toplevel-plist
            #:get-from-track
