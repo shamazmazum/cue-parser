@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+  Manual &ndash; cue-parser
+</title>
+    <link rel="stylesheet" href="static/style.css"/>
+    
+  <link rel="stylesheet" href="static/highlight.css"/>
+  <script src="static/highlight.js"></script>
+  <style>
+   /* Highlight the current top-level TOC item, and hide the TOC of all other items */
+
+   .toc a[data-node="index"] {
+       color: #AD3108;
+   }
+
+   .toc ol {
+       display: none;
+   }
+
+   .toc > ol {
+       display: block;
+   }
+
+   .toc li a[data-node="index"] + ol {
+       display: block;
+   }
+
+   .toc li a[data-node="index"] + ol li {
+       font-size: 16px;
+       margin: 0 10px;
+   }
+
+   .toc li a[active] + ol li:first-child {
+       margin-top: 5px;
+   }
+  </style>
+
+  </head>
+  <body>
+    
+  <h1 class="doc-title">cue-parser » Manual</h1>
+  <article id="article" data-section="index">
+    <aside>
+      <ol class="toc"><li><a href="index.html" data-node="index">Manual</a></li><li><a href="api.html" data-node="api">API</a></li></ol>
+    </aside>
+    <main class="codex-section">
+      <p>
+   <code>cue-parser</code> is a parser for audio CUE sheets based on <code>esrap</code>.</p><p>   You can parse a CUE sheet ether from a character stream using function
+   <code>parse-cue</code> or a file using <code>parse-cue-file</code>. <code>parse-cue-file</code> uses an
+   external format stored in <code>*cue-external-format*</code> by default for reading
+   from files. Each function returns a parsed representation of the file in form
+   of list. There are some helper functions to get data from that
+   representation.</p><p>   For example, if you parse following CUE file:
+   </p><pre><code class=NIL>REM GENRE Gothic
+REM DATE 2010
+REM DISCID 4807E106
+REM COMMENT &quot;ExactAudioCopy v1.0b1&quot;
+PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+TITLE &quot;A Strange Thing To Say&quot;
+FILE &quot;Sopor Aeternus &amp; The Ensemble Of Shadows - A Strange Thing To Say.flac&quot; WAVE
+  TRACK 01 AUDIO
+    TITLE &quot;A Strange Thing To Say&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 01 00:00:00
+  TRACK 02 AUDIO
+    TITLE &quot;Polishing Silver&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 00 09:41:69
+    INDEX 01 09:43:47
+  TRACK 03 AUDIO
+    TITLE &quot;The Urine Song&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 00 14:52:58
+    INDEX 01 14:55:06
+  TRACK 04 AUDIO
+    TITLE &quot;Stains Of You&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 00 19:11:22
+    INDEX 01 19:13:26
+  TRACK 05 AUDIO
+    TITLE &quot;20.000 Leagues Under The Sea&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 00 23:17:62
+    INDEX 01 23:19:40
+  TRACK 06 AUDIO
+    TITLE &quot;Oh, Chimney Sweep&quot;
+    PERFORMER &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;
+    INDEX 00 29:57:03
+    INDEX 01 29:59:14
+   </code></pre><p>
+   you will get the following parsed representation:</p><p>   </p><pre><code class="lisp">(((:REM . &quot; GENRE Gothic&quot;)(:REM . &quot; DATE 2010&quot;)(:REM . &quot; DISCID 4807E106&quot;)
+  (:REM . &quot; COMMENT \&quot;ExactAudioCopy v1.0b1\&quot;&quot;)
+  (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+  (:TITLE . &quot;A Strange Thing To Say&quot;))
+ (((:FILE :NAME
+    &quot;Sopor Aeternus &amp; The Ensemble Of Shadows - A Strange Thing To Say.flac&quot;
+    :TYPE &quot;WAVE&quot;)
+   (:TRACK :NUMBER 1 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;A Strange Thing To Say&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 1 :MIN 0 :SEC 0))
+  ((:TRACK :NUMBER 2 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;Polishing Silver&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 0 :MIN 9 :SEC 41)(:INDEX :NUMBER 1 :MIN 9 :SEC 43))
+  ((:TRACK :NUMBER 3 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;The Urine Song&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 0 :MIN 14 :SEC 52)(:INDEX :NUMBER 1 :MIN 14 :SEC 55))
+  ((:TRACK :NUMBER 4 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;Stains Of You&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 0 :MIN 19 :SEC 11)(:INDEX :NUMBER 1 :MIN 19 :SEC 13))
+  ((:TRACK :NUMBER 5 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;20.000 Leagues Under The Sea&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 0 :MIN 23 :SEC 17)(:INDEX :NUMBER 1 :MIN 23 :SEC 19))
+  ((:TRACK :NUMBER 6 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;Oh, Chimney Sweep&quot;)
+   (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+   (:INDEX :NUMBER 0 :MIN 29 :SEC 57)(:INDEX :NUMBER 1 :MIN 29 :SEC 59))))
+   </code></pre><p>   As you probably see, this representation is a list with 2 elements. The first
+   element contains all CUE commands preceding the first <code>TRACK</code> command, and
+   the second is a list of tracks. You can get both with <code>first</code> and
+   <code>second</code> functions, or, which is the same, with <code>get-toplevel</code> and
+   <code>get-tracks</code>.</p><p>   If you want, for example, get the name of the album, you can use
+   <code>get-command-arg</code> function with toplevel block:</p><p>   </p><pre><code class="lisp">(let ((tree (parse-cue-file &quot;album.cue&quot;)))
+       (get-command-arg (get-toplevel tree) :title))
+   &gt;&gt;&gt; &quot;A Strange Thing To Say&quot;
+   </code></pre><p>   You can get a track by an index in the block of tracks, for example, <code>(nth 1
+   (second tree))</code> returns the second track. You can also use a function called
+   <code>get-track-by-idx</code> for the same purpose. In the following example the name
+   of the second track is returned:</p><p>   </p><pre><code class="lisp">(let ((tree (parse-cue-file &quot;album.cue&quot;)))
+       (get-command-arg (get-track-by-idx tree 1) :title))
+   &gt;&gt;&gt; &quot;Polishing Silver&quot;
+   </code></pre><p>   If a command argument is a property list, you can use
+   <code>get-command-named-arg</code> to get what you want. Calling
+   <code>(get-command-named-arg tree command arg-name)</code> equals to <code>(getf
+   (get-command-arg tree command) arg-name)</code>.</p><p>   You can get a file name in which the track is stored by calling
+   <code>get-file-name</code>:
+   </p><pre><code class="lisp">(let ((tree (parse-cue-file &quot;album.cue&quot;)))
+       (get-file-name tree (get-track-by-idx tree 3)))
+   &gt;&gt;&gt; &quot;Sopor Aeternus &amp; The Ensemble Of Shadows - A Strange Thing To Say.flac&quot;
+   </code></pre><p>
+   This is the only way to get a file name. Calling <code>get-command-arg</code> in this
+   case is incorrect.</p><p>   If you want to get a time offset in seconds from the beggining of the file
+   for a particular track, use <code>get-track-index-sec</code>.</p><p>   Finally, if you want to search for a track by a specific criterion, use
+   <code>find-track</code> function. This is simply a wrapper around <code>find-if</code> and
+   requires a predicate to do the search. For example, you can find a track
+   which name is &quot;The Urine Song&quot; (yep, sounds suspicious, I know ;):</p><p>   </p><pre><code class="lisp">(let ((tree (parse-cue-file &quot;album.cue&quot;)))
+       (find-track tree
+                   (lambda (track)(string= &quot;The Urine Song&quot;
+                                            (get-command-arg track :title)))))
+   &gt;&gt;&gt; ((:TRACK :NUMBER 3 :TYPE &quot;AUDIO&quot;)(:TITLE . &quot;The Urine Song&quot;)
+        (:PERFORMER . &quot;Sopor Aeternus &amp; The Ensemble Of Shadows&quot;)
+        (:INDEX :NUMBER 0 :MIN 14 :SEC 52)(:INDEX :NUMBER 1 :MIN 14 :SEC 55))
+   </code></pre><p>   That's all. If you wish, you can totally ignore these functions and use
+   <code>find</code>/<code>car</code>/<code>cdr</code> or whatever you wish to get data from parsed file as
+   its representation is a simple list.
+       
+</p>
+    </main>
+  </article>
+  <footer>
+    <div class="info">
+      Created with <a href="https://github.com/CommonDoc/codex">Codex</a>.
+    </div>
+  </footer>
+  <script>
+   HighlightLisp.highlight_auto();
+  </script>
+
+  </body>
+</html>

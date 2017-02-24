@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+  API &ndash; cue-parser
+</title>
+    <link rel="stylesheet" href="static/style.css"/>
+    
+  <link rel="stylesheet" href="static/highlight.css"/>
+  <script src="static/highlight.js"></script>
+  <style>
+   /* Highlight the current top-level TOC item, and hide the TOC of all other items */
+
+   .toc a[data-node="api"] {
+       color: #AD3108;
+   }
+
+   .toc ol {
+       display: none;
+   }
+
+   .toc > ol {
+       display: block;
+   }
+
+   .toc li a[data-node="api"] + ol {
+       display: block;
+   }
+
+   .toc li a[data-node="api"] + ol li {
+       font-size: 16px;
+       margin: 0 10px;
+   }
+
+   .toc li a[active] + ol li:first-child {
+       margin-top: 5px;
+   }
+  </style>
+
+  </head>
+  <body>
+    
+  <h1 class="doc-title">cue-parser » API</h1>
+  <article id="article" data-section="api">
+    <aside>
+      <ol class="toc"><li><a href="index.html" data-node="index">Manual</a></li><li><a href="api.html" data-node="api">API</a></li></ol>
+    </aside>
+    <main class="codex-section">
+      
+   
+      <div class="codex-doc-node codex-variable"><code class="codex-name">*cue-external-format*</code><div class="codex-docstring">Default external format for CUE sheet files</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">parse-cue</code><code class="codex-lambda-list">(stream)</code><div class="codex-docstring">Parse CUE sheet from the <code class="codex-param">stream</code>. Stream must be opened as a
+ character stream. User must detect and set external format by himself</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">parse-cue-file</code><code class="codex-lambda-list">(name &amp;optional (external-format *cue-external-format*))</code><div class="codex-docstring">Parses CUE sheet from file with the name
+<code class="codex-param">name</code>. <code class="codex-param">external-format</code> is used for reading from file.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">find-track</code><code class="codex-lambda-list">(tree test)</code><div class="codex-docstring">Returns the first track in parsed CUE sheet <code class="codex-param">tree</code> which satisfies the
+ test. Test function receives a track as its only argument.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-track-by-idx</code><code class="codex-lambda-list">(tree idx)</code><div class="codex-docstring">Return a track from parsed CUE sheet <code class="codex-param">tree</code> by its index
+ <code class="codex-param">idx</code>.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-toplevel</code><code class="codex-lambda-list">(tree)</code><div class="codex-docstring">Get the toplevel block from parsed CUE sheet. Just wrapper around <code>first</code>.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-tracks</code><code class="codex-lambda-list">(tree)</code><div class="codex-docstring">Get tracks from parsed CUE sheet. Just wrapper around <code>second</code>.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-command-arg</code><code class="codex-lambda-list">(tree command)</code><div class="codex-docstring">Get an argument of the command from CUE sheet block
+ <code class="codex-param">tree</code>. <code class="codex-param">tree</code> can be the toplevel block or a track block.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-command-named-arg</code><code class="codex-lambda-list">(tree command arg-name)</code><div class="codex-docstring">Get a named argument of the command from CUE sheet block
+ <code class="codex-param">tree</code>. <code class="codex-param">tree</code> can be the toplevel block or a track block.</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-file-name</code><code class="codex-lambda-list">(tree track)</code><div class="codex-docstring">Returns a file name where the track <code class="codex-param">track</code> can be found</div></div>
+      <div class="codex-doc-node codex-operator codex-function"><code class="codex-name">get-track-index-sec</code><code class="codex-lambda-list">(track &amp;optional (index start))</code><div class="codex-docstring">Get an index in seconds for a <code class="codex-param">track</code>. <code class="codex-param">index</code> can be
+  either <code>:PREGAP</code>, <code>:START</code> or a number.</div></div>
+   
+
+    </main>
+  </article>
+  <footer>
+    <div class="info">
+      Created with <a href="https://github.com/CommonDoc/codex">Codex</a>.
+    </div>
+  </footer>
+  <script>
+   HighlightLisp.highlight_auto();
+  </script>
+
+  </body>
+</html>
