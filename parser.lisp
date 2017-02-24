@@ -158,7 +158,7 @@
 
 (defun parse-cue (stream)
   "Parse CUE sheet from the @cl:param(stream). Stream must be opened as a
- character stream. User must detect and set :external-format by himself"
+ character stream. User must detect and set external format by himself"
   (parse 'cue-sheet
          ;; This is ugly: read the whole file into a string
          (with-output-to-string (out)

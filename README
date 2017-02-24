@@ -1,17 +1,5 @@
 This simple library can help you to parse cue sheet files in simple s-expr tree 
-and  get metadata (i.e. performer, title of audio work, indices and so on) 
-from it.
+and  get metadata (i.e. performer, title of audio work, indices and so on) from
+it.
 
-Example:
-  (with-open-file (stream "file.cue")
-    (let* ((tree (cue:parse-cue stream))
-           (track (cue:find-track ; Find track with title "Gop Stop"
-                   tree
-                   #'(lambda (track) (string= (cue:get-from-track track :title) "Gop Stop")))))
-
-      (cue:get-from-toplevel tree :title)   ; Title of an album
-      (cue:get-from-track track :performer) ; Performer of the found track
-;; Returns number of seconds from beginning of stream to the track's  pregap
-      (cue:get-track-index-sec track :pregap)))
-
-And so on. See helper-functions.lisp for more info.
+See http://shamazmazum.github.io/cue-parser/ for documentation

@@ -1,0 +1,161 @@
+@begin[ref=index](section)
+   @title(Manual)
+   @c(cue-parser) is a parser for audio CUE sheets based on @c(esrap).
+
+   You can parse a CUE sheet ether from a character stream using function
+   @c(parse-cue) or a file using @c(parse-cue-file). @c(parse-cue-file) uses an
+   external format stored in @c(*cue-external-format*) by default for reading
+   from files. Each function returns a parsed representation of the file in form
+   of list. There are some helper functions to get data from that
+   representation.
+
+   For example, if you parse following CUE file:
+   @begin(code)
+REM GENRE Gothic
+REM DATE 2010
+REM DISCID 4807E106
+REM COMMENT "ExactAudioCopy v1.0b1"
+PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+TITLE "A Strange Thing To Say"
+FILE "Sopor Aeternus & The Ensemble Of Shadows - A Strange Thing To Say.flac" WAVE
+  TRACK 01 AUDIO
+    TITLE "A Strange Thing To Say"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 01 00:00:00
+  TRACK 02 AUDIO
+    TITLE "Polishing Silver"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 00 09:41:69
+    INDEX 01 09:43:47
+  TRACK 03 AUDIO
+    TITLE "The Urine Song"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 00 14:52:58
+    INDEX 01 14:55:06
+  TRACK 04 AUDIO
+    TITLE "Stains Of You"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 00 19:11:22
+    INDEX 01 19:13:26
+  TRACK 05 AUDIO
+    TITLE "20.000 Leagues Under The Sea"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 00 23:17:62
+    INDEX 01 23:19:40
+  TRACK 06 AUDIO
+    TITLE "Oh, Chimney Sweep"
+    PERFORMER "Sopor Aeternus & The Ensemble Of Shadows"
+    INDEX 00 29:57:03
+    INDEX 01 29:59:14
+   @end(code)
+   you will get the following parsed representation:
+
+   @begin[lang=lisp](code)
+(((:REM . " GENRE Gothic") (:REM . " DATE 2010") (:REM . " DISCID 4807E106")
+  (:REM . " COMMENT \"ExactAudioCopy v1.0b1\"")
+  (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+  (:TITLE . "A Strange Thing To Say"))
+ (((:FILE :NAME
+    "Sopor Aeternus & The Ensemble Of Shadows - A Strange Thing To Say.flac"
+    :TYPE "WAVE")
+   (:TRACK :NUMBER 1 :TYPE "AUDIO") (:TITLE . "A Strange Thing To Say")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 1 :MIN 0 :SEC 0))
+  ((:TRACK :NUMBER 2 :TYPE "AUDIO") (:TITLE . "Polishing Silver")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 0 :MIN 9 :SEC 41) (:INDEX :NUMBER 1 :MIN 9 :SEC 43))
+  ((:TRACK :NUMBER 3 :TYPE "AUDIO") (:TITLE . "The Urine Song")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 0 :MIN 14 :SEC 52) (:INDEX :NUMBER 1 :MIN 14 :SEC 55))
+  ((:TRACK :NUMBER 4 :TYPE "AUDIO") (:TITLE . "Stains Of You")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 0 :MIN 19 :SEC 11) (:INDEX :NUMBER 1 :MIN 19 :SEC 13))
+  ((:TRACK :NUMBER 5 :TYPE "AUDIO") (:TITLE . "20.000 Leagues Under The Sea")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 0 :MIN 23 :SEC 17) (:INDEX :NUMBER 1 :MIN 23 :SEC 19))
+  ((:TRACK :NUMBER 6 :TYPE "AUDIO") (:TITLE . "Oh, Chimney Sweep")
+   (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+   (:INDEX :NUMBER 0 :MIN 29 :SEC 57) (:INDEX :NUMBER 1 :MIN 29 :SEC 59))))
+   @end(code)
+
+   As you probably see, this representation is a list with 2 elements. The first
+   element contains all CUE commands preceding the first @c(TRACK) command, and
+   the second is a list of tracks. You can get both with @c(first) and
+   @c(second) functions, or, which is the same, with @c(get-toplevel) and
+   @c(get-tracks).
+
+   If you want, for example, get the name of the album, you can use
+   @c(get-command-arg) function with toplevel block:
+
+   @begin[lang=lisp](code)
+   (let ((tree (parse-cue-file "album.cue")))
+       (get-command-arg (get-toplevel tree) :title))
+   >>> "A Strange Thing To Say"
+   @end(code)
+
+   You can get a track by an index in the block of tracks, for example, @c((nth 1
+   (second tree))) returns the second track. You can also use a function called
+   @c(get-track-by-idx) for the same purpose. In the following example the name
+   of the second track is returned:
+
+   @begin[lang=lisp](code)
+   (let ((tree (parse-cue-file "album.cue")))
+       (get-command-arg (get-track-by-idx tree 1) :title))
+   >>> "Polishing Silver"
+   @end(code)
+
+   If a command argument is a property list, you can use
+   @c(get-command-named-arg) to get what you want. Calling
+   @c((get-command-named-arg tree command arg-name)) equals to @c((getf
+   (get-command-arg tree command) arg-name)).
+
+   You can get a file name in which the track is stored by calling
+   @c(get-file-name):
+   @begin[lang=lisp](code)
+   (let ((tree (parse-cue-file "album.cue")))
+       (get-file-name tree (get-track-by-idx tree 3)))
+   >>> "Sopor Aeternus & The Ensemble Of Shadows - A Strange Thing To Say.flac"
+   @end(code)
+   This is the only way to get a file name. Calling @c(get-command-arg) in this
+   case is incorrect.
+
+   If you want to get a time offset in seconds from the beggining of the file
+   for a particular track, use @c(get-track-index-sec).
+
+   Finally, if you want to search for a track by a specific criterion, use
+   @c(find-track) function. This is simply a wrapper around @c(find-if) and
+   requires a predicate to do the search. For example, you can find a track
+   which name is "The Urine Song" (yep, sounds suspicious, I know ;):
+
+   @begin[lang=lisp](code)
+   (let ((tree (parse-cue-file "album.cue")))
+       (find-track tree
+                   (lambda (track) (string= "The Urine Song"
+                                            (get-command-arg track :title)))))
+   >>> ((:TRACK :NUMBER 3 :TYPE "AUDIO") (:TITLE . "The Urine Song")
+        (:PERFORMER . "Sopor Aeternus & The Ensemble Of Shadows")
+        (:INDEX :NUMBER 0 :MIN 14 :SEC 52) (:INDEX :NUMBER 1 :MIN 14 :SEC 55))
+   @end(code)
+
+   That's all. If you wish, you can totally ignore these functions and use
+   @c(find)/@c(car)/@c(cdr) or whatever you wish to get data from parsed file as
+   its representation is a simple list.
+
+@end(section)
+
+@begin(section)
+   @title(API)
+   @cl:with-package[name="cue-parser"](
+      @cl:doc(variable *cue-external-format*)
+      @cl:doc(function parse-cue)
+      @cl:doc(function parse-cue-file)
+      @cl:doc(function find-track)
+      @cl:doc(function get-track-by-idx)
+      @cl:doc(function get-toplevel)
+      @cl:doc(function get-tracks)
+      @cl:doc(function get-command-arg)
+      @cl:doc(function get-command-named-arg)
+      @cl:doc(function get-file-name)
+      @cl:doc(function get-track-index-sec)
+   )
+@end(section)

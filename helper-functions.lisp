@@ -24,17 +24,17 @@
 (in-package :cue-parser)
 
 (defun find-track (tree test)
-  "Returns first track in parsed CUE sheet @cl:param(tree) which satisfies the
+  "Returns the first track in parsed CUE sheet @cl:param(tree) which satisfies the
  test. Test function receives a track as its only argument."
   (find-if test (second tree)))
 
 (defun get-track-by-idx (tree idx)
-  "Return track from parsed CUE sheet @cl:param(tree) by its index
- cl:param(idx)."
+  "Return a track from parsed CUE sheet @cl:param(tree) by its index
+ @cl:param(idx)."
   (nth idx (second tree)))
 
 (defun get-toplevel (tree)
-  "Get toplevel block from parsed CUE sheet. Just wrapper around @c(first)."
+  "Get the toplevel block from parsed CUE sheet. Just wrapper around @c(first)."
   (first tree))
 
 (defun get-tracks (tree)
@@ -42,14 +42,14 @@
   (second tree))
 
 (defun get-command-arg (tree command)
-  "Get the argument of the command from CUE sheet block
+  "Get an argument of the command from CUE sheet block
  @cl:param(tree). @cl:param(tree) can be the toplevel block or a track block."
   (flet ((needed-commandp (toplevel-command)
            (eq (car toplevel-command) command)))
     (cdr (find-if #'needed-commandp tree))))
 
 (defun get-command-named-arg (tree command arg-name)
-  "Get the named argument of the command from CUE sheet block
+  "Get a named argument of the command from CUE sheet block
  @cl:param(tree). @cl:param(tree) can be the toplevel block or a track block."
   (getf (get-command-arg tree command) arg-name))
 
@@ -68,8 +68,8 @@
     (get-command-named-arg track-with-file :file :name)))
 
 (defun get-track-index-sec (track &optional (index :start))
-  "Get index in seconds for a @cl:param(track). @cl:param(index) can be either
- @c(:PREGAP), @c(:START) or a number."
+  "Get an index in seconds for a @cl:param(track). @cl:param(index) can be
+  either @c(:PREGAP), @c(:START) or a number."
   (declare (type (or number (member :pregap :start)) index))
   (let* ((index-num
           (cond
