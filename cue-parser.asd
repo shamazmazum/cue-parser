@@ -23,8 +23,10 @@
 
 (defsystem :cue-parser
   :name :cue-parser
-  :version "0.1"
-  :author "Vasily Postnicov <shamaz.mazum at gmail dot com>"
+  :version "0.5"
+  :author "Vasily Postnicov <shamaz.mazum@gmail.com>"
+  :license "2-clause BSD"
+  :description "A library for parsing audio CUE files"
   :components ((:file "package")
 	       (:file "parser" :depends-on ("package"))
                (:file "helper-functions" :depends-on ("package")))
