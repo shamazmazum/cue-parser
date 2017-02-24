@@ -25,13 +25,14 @@
   (:nicknames :cue)
   (:use #:cl #:esrap #:flexi-streams)
   (:export #:parse-cue ;; Parser
+
            #:find-track ;; Helper functions
            #:get-track-by-idx
-           #:get-from-toplevel
-           #:get-from-toplevel-plist
-           #:get-from-track
-           #:get-from-track-plist
+           #:get-toplevel
+           #:get-tracks
+           #:get-command-arg
+           #:get-command-named-arg
            #:get-file-name
            #:get-track-index-sec
-           #:parse-cue-helper
+           #:parse-cue-file
            #:*cue-external-format*))

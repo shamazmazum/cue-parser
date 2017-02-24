@@ -129,14 +129,10 @@
   (:function string-to-keyword))
 
 ;; File structure
-;; As described in CUE-sheet documentation FILE command
-;; must be first command in file possible with exception
-;; of CATALOG. But in practice with is not always true.
-;; So we will not relay on this.
-
-;; Try to determine CUE sheet structure relaying on indents
-;; or by judging FILE or TRACK command as starting command
-;; of new block
+;; The parser divides CUE sheet on toplevel block, where comments, album title,
+;; performer and so on are stored and inner blocks, each related to a separate
+;; track. TRACK command starts a new block. There can be FILE command
+;; preceding TRACK command to specify a file where TRACK is stored.
 
 ;; Command which are allowed inside a block
 (defrule inner-command (and (or title-command index-command isrc-command
@@ -161,21 +157,23 @@
 (defrule cue-sheet (and (+ toplevel-command) (+ inner-block)))
 
 (defun parse-cue (stream)
-  "Parse cue-sheet from stream.
-   Stream must be opened as character stream.
-   User must detect and set :external-format by himself"
-
+  "Parse CUE sheet from the @cl:param(stream). Stream must be opened as a
+ character stream. User must detect and set :external-format by himself"
   (parse 'cue-sheet
+         ;; This is ugly: read the whole file into a string
          (with-output-to-string (out)
-           (loop for line = (read-line stream nil)
-                 while line do
-                  (write-string (string-trim '(#\Tab #\Space) line) out)
-                  (terpri out)))))
+           (loop
+              for line = (read-line stream nil)
+              while line do
+                (write-string (string-trim '(#\Tab #\Space) line) out)
+                (terpri out)))))
 
-(defparameter *cue-external-format* '(:utf-8 :eol-style :crlf))
+(defparameter *cue-external-format* '(:utf-8 :eol-style :crlf)
+  "Default external format for CUE sheet files")
 
-(defun parse-cue-helper (name &optional (external-format *cue-external-format*))
-  "Parses cue sheet from file with name NAME"
+(defun parse-cue-file (name &optional (external-format *cue-external-format*))
+  "Parses CUE sheet from file with the name
+@cl:param(name). @cl:param(external-format) is used for reading from file."
   (let* ((input-raw (open name :element-type 'octet))
          (input (make-flexi-stream input-raw :external-format external-format)))
     (unwind-protect (parse-cue input) (close input))))
